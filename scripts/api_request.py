@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
 import json
 import sys
+from dataclasses import dataclass
 from typing import Any
 from urllib import error, request
 
@@ -20,7 +21,7 @@ class ResponseData:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Simple API testing CLI")
+    parser = argparse.ArgumentParser(description="Simple API testing helper")
     parser.add_argument("method", choices=SUPPORTED_METHODS, help="HTTP method")
     parser.add_argument("url", help="Request URL")
     parser.add_argument(
@@ -70,14 +71,13 @@ def parse_json_body(json_body: str | None) -> Any:
 
 
 def format_body(response: ResponseData) -> str:
-    text = response.text
-    if not text:
+    if not response.text:
         return "<empty>"
 
     try:
-        parsed = json.loads(text)
+        parsed = json.loads(response.text)
     except json.JSONDecodeError:
-        return text
+        return response.text
 
     return json.dumps(parsed, indent=2, sort_keys=True)
 
@@ -98,15 +98,10 @@ def build_request(args: argparse.Namespace) -> request.Request:
     if json_body is not None:
         data = json.dumps(json_body).encode("utf-8")
         headers.setdefault("Content-Type", "application/json")
-    return request.Request(
-        url=args.url,
-        data=data,
-        headers=headers,
-        method=args.method,
-    )
+    return request.Request(url=args.url, data=data, headers=headers, method=args.method)
 
 
-def read_response(http_response) -> ResponseData:
+def read_response(http_response: Any) -> ResponseData:
     body = http_response.read().decode("utf-8", errors="replace")
     return ResponseData(
         status_code=http_response.getcode(),

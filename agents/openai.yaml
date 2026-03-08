@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Tester"
+  short_description: "Test HTTP APIs with reusable helpers"
+  default_prompt: "Use $api-tester to send an HTTP request and inspect the response."
